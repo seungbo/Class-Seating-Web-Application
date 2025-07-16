@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="학급 자리 뽑기 웹사이트 - 공정하고 무작위로 학생 자리를 배정합니다">
+    <meta name="keywords" content="학급, 자리뽑기, 좌석배정, 교실">
+    <title>학급 자리 뽑기</title>
+    
+    <!-- CSS 파일 연결 -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/print.css" media="print">
+    
+    <!-- 파비콘 설정 (추후 추가 예정) -->
+    <!-- <link rel="icon" type="image/x-icon" href="assets/favicon.ico"> -->
+</head>
+<body>
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>🎲 학급 자리 뽑기</h1>
+            <p class="subtitle">공정하고 무작위로 자리를 배정해보세요</p>
+        </header>
+
+        <!-- 단계 표시기 -->
+        <nav class="step-indicator">
+            <div class="step active" data-step="1">
+                <span class="step-number">1</span>
+                <span class="step-label">학생 관리</span>
+            </div>
+            <div class="step" data-step="2">
+                <span class="step-number">2</span>
+                <span class="step-label">좌석 배치</span>
+            </div>
+            <div class="step" data-step="3">
+                <span class="step-number">3</span>
+                <span class="step-label">자리 뽑기</span>
+            </div>
+        </nav>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="main-content">
+            <!-- 학생 관리 섹션 -->
+            <section id="student-section" class="content-section active">
+                <h2>학생 관리</h2>
+                <div class="student-input-container">
+                    <!-- 학생 입력 방식 선택 -->
+                    <div class="input-method-selector">
+                        <label>
+                            <input type="radio" name="input-method" value="name" checked>
+                            이름으로 입력
+                        </label>
+                        <label>
+                            <input type="radio" name="input-method" value="number">
+                            번호로 생성
+                        </label>
+                    </div>
+                    
+                    <!-- 이름 입력 방식 -->
+                    <div id="name-input-section" class="input-section">
+                        <div class="input-group">
+                            <input type="text" id="student-name-input" placeholder="학생 이름을 입력하세요">
+                            <button id="add-student-btn" type="button">추가</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 번호 생성 방식 -->
+                    <div id="number-input-section" class="input-section hidden">
+                        <div class="input-group">
+                            <input type="number" id="student-count-input" placeholder="학생 수를 입력하세요" min="1" max="50">
+                            <button id="generate-students-btn" type="button">생성</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 학생 목록 -->
+                <div class="student-list-container">
+                    <div class="student-list-header">
+                        <div class="student-count">
+                            총 학생 수: <span id="student-count">0</span>명
+                        </div>
+                        <div class="student-actions-toolbar">
+                            <button id="sort-students-btn" class="btn-small btn-secondary" title="학생 목록 정렬">정렬</button>
+                            <button id="export-students-btn" class="btn-small btn-secondary" title="학생 목록 내보내기">내보내기</button>
+                            <button id="clear-all-btn" class="btn-small text-error" title="모든 학생 삭제" style="background: transparent; border: 1px solid var(--error-color); color: var(--error-color);">전체 삭제</button>
+                        </div>
+                    </div>
+                    <ul id="student-list" class="student-list">
+                        <!-- 학생 목록이 동적으로 추가됩니다 -->
+                    </ul>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="next-to-seats-btn" class="btn-primary" disabled>다음: 좌석 배치</button>
+                </div>
+            </section>
+
+            <!-- 좌석 배치 섹션 -->
+            <section id="seat-section" class="content-section">
+                <h2>좌석 배치</h2>
+                <div class="seat-config-container">
+                    <div class="layout-inputs">
+                        <div class="input-group">
+                            <label for="rows-input">행 수:</label>
+                            <input type="number" id="rows-input" min="1" max="10" value="4" placeholder="1-10">
+                        </div>
+                        <div class="input-group">
+                            <label for="cols-input">열 수:</label>
+                            <input type="number" id="cols-input" min="1" max="10" value="6" placeholder="1-10">
+                        </div>
+                        <button id="create-layout-btn" type="button">배치 생성</button>
+                    </div>
+                    
+                    <div class="seat-info">
+                        <p>사용 가능한 좌석: <span id="available-seats">0</span>개</p>
+                        <div id="seat-student-comparison" class="seat-student-comparison"></div>
+                        <p class="help-text">좌석을 클릭하여 활성화/비활성화할 수 있습니다</p>
+                    </div>
+                    
+                    <div class="seat-controls">
+                        <button id="activate-all-btn" class="seat-control-btn">모든 좌석 활성화</button>
+                        <button id="deactivate-all-btn" class="seat-control-btn">모든 좌석 비활성화</button>
+                        <button id="toggle-seat-numbers-btn" class="seat-control-btn">좌석 번호 표시/숨김</button>
+                    </div>
+                </div>
+                
+                <!-- 좌석 배치 시각화 -->
+                <div class="seat-layout-container">
+                    <div id="seat-layout" class="seat-layout">
+                        <!-- 좌석 배치가 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="back-to-students-btn" class="btn-secondary">이전: 학생 관리</button>
+                    <button id="next-to-lottery-btn" class="btn-primary" disabled>다음: 자리 뽑기</button>
+                </div>
+            </section>
+
+            <!-- 자리 뽑기 섹션 -->
+            <section id="lottery-section" class="content-section">
+                <h2>자리 뽑기</h2>
+                <div class="lottery-controls">
+                    <button id="start-lottery-btn" class="btn-lottery">🎲 자리 뽑기 시작!</button>
+                    <button id="restart-lottery-btn" class="btn-secondary hidden">다시 뽑기</button>
+                </div>
+                
+                <!-- 배정 결과 표시 -->
+                <div id="assignment-result" class="assignment-result">
+                    <div id="result-placeholder" class="result-placeholder text-center">
+                        <p>자리 뽑기 시작 버튼을 눌러주세요.</p>
+                    </div>
+                    <div id="result-display" class="hidden">
+                        <!-- 결과가 여기에 표시됩니다. -->
+                    </div>
+                </div>
+                
+                <!-- 결과 관리 -->
+                <div id="result-actions" class="result-actions hidden">
+                    <button id="save-result-btn" class="btn-secondary">결과 저장</button>
+                    <button id="print-result-btn" class="btn-secondary">인쇄</button>
+                    <button id="export-result-btn" class="btn-secondary">텍스트로 내보내기</button>
+                    <button id="view-history-btn" class="btn-secondary">이전 기록 보기</button>
+                </div>
+                
+                <div class="section-actions">
+                    <button id="back-to-seats-btn" class="btn-secondary">이전: 좌석 배치</button>
+                    <button id="new-assignment-btn" class="btn-primary hidden">새로운 배정 시작</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 푸터 -->
+        <footer class="footer">
+            <p>&copy; 2025 학급 자리 뽑기. 모든 권리 보유.</p>
+        </footer>
+    </div>
+
+    <!-- 모달 창들 -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>오류</h3>
+            <p id="error-message"></p>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>이전 배정 기록</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript 파일 연결 -->
+    <script src="js/storage-manager.js"></script>
+    <script src="js/student-manager.js"></script>
+    <script src="js/seat-manager.js"></script>
+    <script src="js/lottery-engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
