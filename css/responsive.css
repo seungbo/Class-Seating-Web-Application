@@ -184,9 +184,12 @@
     
     /* 좌석 */
     .seat {
-        width: 35px;
-        height: 35px;
-        font-size: 0.6rem;
+        width: 30px;
+        height: 30px;
+        font-size: 0.5rem;
+    }
+    .seat-layout {
+        gap: 0.2rem;
     }
     
     /* 학생 목록 */
