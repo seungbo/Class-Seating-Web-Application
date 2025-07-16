@@ -394,15 +394,7 @@ button:disabled {
     z-index: 1;
 }
 
-.row-label, .col-label {
-    position: absolute;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.7);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--border-radius);
-}
+
 
 .seat {
     width: 60px;

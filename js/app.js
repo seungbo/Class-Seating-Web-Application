@@ -44,7 +44,7 @@ class ClassroomLotteryApp {
       seatStudentComparison: document.getElementById('seat-student-comparison'),
       activateAllBtn: document.getElementById('activate-all-btn'),
       deactivateAllBtn: document.getElementById('deactivate-all-btn'),
-      toggleSeatNumbersBtn: document.getElementById('toggle-seat-numbers-btn'),
+      
       nextToLotteryBtn: document.getElementById('next-to-lottery-btn'),
       backToStudentsBtn: document.getElementById('back-to-students-btn'),
 
@@ -190,9 +190,7 @@ class ClassroomLotteryApp {
     if (this.elements.deactivateAllBtn) {
       this.elements.deactivateAllBtn.addEventListener('click', () => this.handleDeactivateAllSeats());
     }
-    if (this.elements.toggleSeatNumbersBtn) {
-      this.elements.toggleSeatNumbersBtn.addEventListener('click', () => this.handleToggleSeatNumbers());
-    }
+    
 
     // 네비게이션 버튼 이벤트
     if (this.elements.nextToSeatsBtn) {
@@ -832,38 +830,7 @@ class ClassroomLotteryApp {
 
     // 좌석 생성
     for (let row = 0; row < dimensions.rows; row++) {
-      // 행 번호 표시
-      const rowLabel = document.createElement('div');
-      rowLabel.className = 'row-label';
-      rowLabel.textContent = `${row + 1}행`;
-      rowLabel.style.cssText = `
-        grid-column: 0;
-        grid-row: ${row + 2};
-        justify-self: end;
-        align-self: center;
-        margin-right: 0.5rem;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-      `;
-      this.elements.seatLayout.appendChild(rowLabel);
-      
       for (let col = 0; col < dimensions.cols; col++) {
-        // 첫 번째 행에 열 번호 표시
-        if (row === 0) {
-          const colLabel = document.createElement('div');
-          colLabel.className = 'col-label';
-          colLabel.textContent = `${col + 1}열`;
-          colLabel.style.cssText = `
-            grid-column: ${col + 1};
-            grid-row: 1;
-            justify-self: center;
-            margin-bottom: 0.25rem;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-          `;
-          this.elements.seatLayout.appendChild(colLabel);
-        }
-        
         const seat = layout[row][col];
         const seatElement = this.createSeatElement(seat, row, col);
         seatElement.style.gridColumn = col + 1;
@@ -892,37 +859,25 @@ class ClassroomLotteryApp {
     // 좌석 번호 표시 (1부터 시작)
     const seatNumber = `${row + 1}-${col + 1}`;
     
-    // 좌석 위치 표시 요소 추가
-    const positionElement = document.createElement('span');
-    positionElement.className = 'seat-position';
-    positionElement.textContent = seatNumber;
-    seatElement.appendChild(positionElement);
-    
     // 좌석 상태에 따른 클래스 설정
     if (seat.isActive) {
       seatElement.classList.add('active');
       seatElement.title = `좌석 ${seatNumber} (활성화됨) - 클릭하여 비활성화`;
       
-      // 좌석 번호 또는 빈 내용 표시
-      if (this.showSeatNumbers && seat.isEmpty()) {
+      // 좌석 번호 또는 빈 내용 표시 (항상 표시)
+      if (seat.isEmpty()) {
         seatElement.textContent = seatNumber;
-        seatElement.appendChild(positionElement); // 위치 요소 다시 추가
-      } else if (seat.isEmpty()) {
-        seatElement.textContent = '';
-        seatElement.appendChild(positionElement); // 위치 요소 다시 추가
       }
     } else {
       seatElement.classList.add('inactive');
       seatElement.title = `좌석 ${seatNumber} (비활성화됨) - 클릭하여 활성화`;
       seatElement.textContent = '';
-      seatElement.appendChild(positionElement); // 위치 요소 다시 추가
     }
 
     // 학생이 배정된 경우
     if (!seat.isEmpty()) {
       seatElement.classList.add('assigned');
       seatElement.textContent = seat.student.name;
-      seatElement.appendChild(positionElement); // 위치 요소 다시 추가
       seatElement.title = `좌석 ${seatNumber} - ${seat.student.name}`;
     }
 
@@ -988,9 +943,7 @@ class ClassroomLotteryApp {
     if (this.elements.deactivateAllBtn) {
       this.elements.deactivateAllBtn.disabled = !this.seatManager.hasLayout();
     }
-    if (this.elements.toggleSeatNumbersBtn) {
-      this.elements.toggleSeatNumbersBtn.disabled = !this.seatManager.hasLayout();
-    }
+    
   }
 
   /**
@@ -1234,21 +1187,6 @@ class ClassroomLotteryApp {
     }
     
     this.elements.resultDisplay.appendChild(feedbackContainer);
-
-    // 이 부분의 중복 선언을 제거합니다.
-    // const seatLayout = assignment.seatLayout;
-    // const dimensions = { rows: seatLayout.length, cols: seatLayout[0].length };
-
-    this.elements.resultDisplay.style.gridTemplateColumns = `repeat(${dimensions.cols}, 1fr)`;
-
-    for (let row = 0; row < dimensions.rows; row++) {
-      for (let col = 0; col < dimensions.cols; col++) {
-        const seat = seatLayout[row][col];
-        const seatElement = this.createSeatElement(seat, row, col);
-        seatElement.style.cursor = 'default'; // 결과 화면에서는 클릭 방지
-        this.elements.resultDisplay.appendChild(seatElement);
-      }
-    }
   }
 
   /**
@@ -1610,42 +1548,7 @@ class ClassroomLotteryApp {
     }
   }
 
-  /**
-   * 좌석 번호 표시/숨김 토글
-   */
-  handleToggleSeatNumbers() {
-    this.showSeatNumbers = !this.showSeatNumbers;
-    
-    // 모든 좌석 요소에 대해 번호 표시/숨김 적용
-    const seatElements = this.elements.seatLayout.querySelectorAll('.seat');
-    seatElements.forEach(seatElement => {
-      const row = parseInt(seatElement.dataset.row);
-      const col = parseInt(seatElement.dataset.col);
-      const seat = this.seatManager.getSeat(row, col);
-      
-      if (seat) {
-        // 좌석에 학생이 배정되어 있지 않은 경우에만 번호 표시/숨김 적용
-        if (seat.isEmpty()) {
-          const positionElement = seatElement.querySelector('.seat-position') || document.createElement('span');
-          positionElement.className = 'seat-position';
-          positionElement.textContent = `${row + 1}-${col + 1}`;
-
-          if (this.showSeatNumbers) {
-            // Ensure text content is set correctly without duplicating the position span
-            seatElement.textContent = `${row + 1}-${col + 1}`;
-          } else {
-            seatElement.textContent = '';
-          }
-          // Always ensure the position element is a child
-          if (!seatElement.contains(positionElement)) {
-            seatElement.appendChild(positionElement);
-          }
-        }
-      }
-    });
-    
-    this.showSuccess(this.showSeatNumbers ? '좌석 번호가 표시됩니다.' : '좌석 번호가 숨겨집니다.');
-  }
+  
 
   /**
    * 기록 모달 숨기기
